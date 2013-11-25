@@ -2,11 +2,11 @@
  * Copyright (C) 2001-2003 Peter J Jones (pjones@pmade.org)
  *               2009      Vaclav Slavik <vslavik@gmail.com>
  * All Rights Reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
@@ -16,7 +16,7 @@
  * 3. Neither the name of the Author nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -587,6 +587,23 @@ public:
     iterator find(const char *name);
 
     /**
+        Find the first child node that has the given name, ignoring case.
+        If no such node can be found, this function will return the same
+        iterator that end() would return.
+
+        This function is not recursive. That is, it will not search down the
+        tree for the requested node. Instead, it will only search one level
+        deep, only checking the children of this node.
+
+        @param name The name of the node you want to find.
+        @return An iterator that points to the node if found.
+        @return An end() iterator if the node was not found.
+
+        @see elements(const char*), find(const char*, iterator)
+     */
+    iterator find_icase(const char *name);
+
+    /**
         Find the first child node that has the given name. If no such node
         can be found, this function will return the same const_iterator that
         end() would return.
@@ -603,6 +620,24 @@ public:
              find(const char*, const_iterator) const
      */
     const_iterator find(const char *name) const;
+
+    /**
+        Find the first child node that has the given name, ignoring case.
+        If no such node can be found, this function will return the same
+        const_iterator that end() would return.
+
+        This function is not recursive. That is, it will not search down the
+        tree for the requested node. Instead, it will only search one level
+        deep, only checking the children of this node.
+
+        @param name The name of the node you want to find.
+        @return A const_iterator that points to the node if found.
+        @return An end() const_iterator if the node was not found.
+
+        @see elements(const char*) const,
+             find(const char*, const_iterator) const
+     */
+    const_iterator find_icase(const char *name) const;
 
     /**
         Find the first child node, starting with the given iterator, that has
@@ -624,6 +659,25 @@ public:
     iterator find(const char *name, const iterator& start);
 
     /**
+        Find the first child node, starting with the given iterator, that has
+        the given name, ignoring case. If no such node can be found, this
+        function will return the same iterator that end() would return.
+
+        This function should be given an iterator to one of this node's
+        children. The search will begin with that node and continue with all
+        its sibliings. This function will not recurse down the tree, it only
+        searches in one level.
+
+        @param name The name of the node you want to find.
+        @param start Where to begin the search.
+        @return An iterator that points to the node if found.
+        @return An end() iterator if the node was not found.
+
+        @see elements(const char*)
+     */
+    iterator find_icase(const char *name, const iterator& start);
+
+    /**
         Find the first child node, starting with the given const_iterator,
         that has the given name. If no such node can be found, this function
         will return the same const_iterator that end() would return.
@@ -641,6 +695,26 @@ public:
         @see elements(const char*) const
      */
     const_iterator find(const char *name, const const_iterator& start) const;
+
+    /**
+        Find the first child node, starting with the given const_iterator,
+        that has the given name, ignoring case. If no such node can be found,
+        this function will return the same const_iterator that end() would
+        return.
+
+        This function should be given a const_iterator to one of this node's
+        children. The search will begin with that node and continue with all
+        its siblings. This function will not recurse down the tree, it only
+        searches in one level.
+
+        @param name The name of the node you want to find.
+        @param start Where to begin the search.
+        @return A const_iterator that points to the node if found.
+        @return An end() const_iterator if the node was not found.
+
+        @see elements(const char*) const
+     */
+    const_iterator find_icase(const char *name, const const_iterator& start) const;
 
     /**
         Returns view of child nodes of type type_element. If no such node
@@ -704,6 +778,25 @@ public:
     nodes_view elements(const char *name);
 
     /**
+        Returns view of child nodes of type type_element with name @a name,
+        ignoring case. If no such node can be found, returns empty view.
+
+        Example:
+        @code
+        xml::nodes_view view(root.elements("person"));
+        for (xml::nodes_view::iterator i = view.begin(); i != view.end(); ++i)
+        {
+          ...
+        }
+        @endcode
+
+        @param  name Name of the elements to return.
+        @return View that contains only elements @a name.
+        @since  0.6.0
+     */
+    nodes_view elements_icase(const char *name);
+
+    /**
         Returns view of child nodes of type type_element with name @a name.
         If no such node can be found, returns empty view.
 
@@ -723,6 +816,27 @@ public:
         @since  0.6.0
      */
     const_nodes_view elements(const char *name) const;
+
+    /**
+        Returns view of child nodes of type type_element with name @a name,
+        ignoring case. If no such node can be found, returns empty view.
+
+        Example:
+        @code
+        xml::const_nodes_view view(root.elements("person"));
+        for (xml::const_nodes_view::const_iterator i = view.begin();
+             i != view.end();
+             ++i)
+        {
+          ...
+        }
+        @endcode
+
+        @param  name Name of the elements to return.
+        @return View that contains only elements @a name.
+        @since  0.6.0
+     */
+    const_nodes_view elements_icase(const char *name) const;
 
     /**
         Insert a new child node. The new node will be inserted at the end of

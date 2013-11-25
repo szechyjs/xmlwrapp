@@ -2,11 +2,11 @@
  * Copyright (C) 2001-2003 Peter J Jones (pjones@pmade.org)
  *               2009      Vaclav Slavik <vslavik@gmail.com>
  * All Rights Reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
@@ -16,7 +16,7 @@
  * 3. Neither the name of the Author nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -208,13 +208,23 @@ struct insert_node : public std::unary_function<xmlNodePtr, void>
 
 
 // an element node finder
-xmlNodePtr find_element(const char *name, xmlNodePtr first)
+xmlNodePtr find_element(const char *name, xmlNodePtr first, bool icase = false)
 {
     while (first != 0)
     {
-        if (first->type == XML_ELEMENT_NODE && xmlStrcmp(first->name, reinterpret_cast<const xmlChar*>(name)) == 0)
+        if (icase)
         {
-            return first;
+            if (first->type == XML_ELEMENT_NODE && xmlStrcasecmp(first->name, reinterpret_cast<const xmlChar*>(name)) == 0)
+            {
+                return first;
+            }
+        }
+        else
+        {
+            if (first->type == XML_ELEMENT_NODE && xmlStrcmp(first->name, reinterpret_cast<const xmlChar*>(name)) == 0)
+            {
+                return first;
+            }
         }
         first = first->next;
     }
@@ -622,10 +632,26 @@ node::iterator node::find(const char *name)
     return end();
 }
 
+node::iterator node::find_icase(const char *name)
+{
+    xmlNodePtr found = find_element(name, pimpl_->xmlnode_->children, true);
+    if (found)
+        return iterator(found);
+    return end();
+}
+
 
 node::const_iterator node::find(const char *name) const
 {
     xmlNodePtr found = find_element(name, pimpl_->xmlnode_->children);
+    if (found)
+        return const_iterator(found);
+    return end();
+}
+
+node::const_iterator node::find_icase(const char *name) const
+{
+    xmlNodePtr found = find_element(name, pimpl_->xmlnode_->children, true);
     if (found)
         return const_iterator(found);
     return end();
@@ -640,11 +666,27 @@ node::iterator node::find(const char *name, const iterator& start)
     return end();
 }
 
+node::iterator node::find_icase(const char *name, const iterator& start)
+{
+    xmlNodePtr n = static_cast<xmlNodePtr>(start.get_raw_node());
+    if ( (n = find_element(name, n, true)))
+        return iterator(n);
+    return end();
+}
+
 
 node::const_iterator node::find(const char *name, const const_iterator& start) const
 {
     xmlNodePtr n = static_cast<xmlNodePtr>(start.get_raw_node());
     if ( (n = find_element(name, n)))
+        return const_iterator(n);
+    return end();
+}
+
+node::const_iterator node::find_icase(const char *name, const const_iterator& start) const
+{
+    xmlNodePtr n = static_cast<xmlNodePtr>(start.get_raw_node());
+    if ( (n = find_element(name, n, true)))
         return const_iterator(n);
     return end();
 }
@@ -677,11 +719,29 @@ nodes_view node::elements(const char *name)
            );
 }
 
+nodes_view node::elements_icase(const char *name)
+{
+    return nodes_view
+           (
+               find_element(name, pimpl_->xmlnode_->children, true),
+               new next_named_element_functor(name)
+           );
+}
+
 xml::const_nodes_view node::elements(const char *name) const
 {
     return const_nodes_view
            (
                find_element(name, pimpl_->xmlnode_->children),
+               new next_named_element_functor(name)
+           );
+}
+
+xml::const_nodes_view node::elements_icase(const char *name) const
+{
+    return const_nodes_view
+           (
+               find_element(name, pimpl_->xmlnode_->children, true),
                new next_named_element_functor(name)
            );
 }
